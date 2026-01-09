@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS months (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   year_id INTEGER NOT NULL,
   month INTEGER NOT NULL CHECK(month >= 1 AND month <= 12),
-  allocation_distribution TEXT NOT NULL DEFAULT '{"besoins": 45, "courses": 10, "loisirs": 10, "vacances": 10, "epargne": 25}',
+  allocation_distribution TEXT NOT NULL DEFAULT '{"besoins": 50, "loisirs": 30, "epargne": 20}',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(year_id) REFERENCES years(id),
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS months (
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  type TEXT NOT NULL CHECK(type IN ('fixed', 'variable')),
+  type TEXT NOT NULL CHECK(type IN ('fixed', 'variable', 'revenue')),
   name TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES users(id)
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS fixed_expenses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   month_id INTEGER NOT NULL,
-  category_id INTEGER NOT NULL,
+  category_id INTEGER,
   label TEXT NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
   source TEXT,
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS fixed_expenses (
 CREATE TABLE IF NOT EXISTS variable_expenses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   month_id INTEGER NOT NULL,
-  category_id INTEGER NOT NULL,
+  category_id INTEGER,
   subcategory TEXT,
   label TEXT NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS variable_expenses (
 CREATE TABLE IF NOT EXISTS revenues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   month_id INTEGER NOT NULL,
-  type TEXT NOT NULL CHECK(type IN ('fixed', 'variable')),
+  type TEXT DEFAULT 'fixed',
   label TEXT NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
   source TEXT,
@@ -202,17 +202,18 @@ const initDb = () => {
         database.run(stmt + ';', (err) => {
           if (err) {
             console.error('Error executing schema statement:', err);
-            reject(err);
+            // Don't reject here to allow progressive updates, but log errors
           }
         });
       });
 
-      // 2. Insert default user (queued after schema creation)
+      // 2. Insert default user
       database.run("INSERT OR IGNORE INTO users (id, name) VALUES (1, 'Default User')", (err) => {
         if (err) console.error('Error creating default user:', err);
       });
 
-      // 3. Insert default categories (queued after user creation)
+      // 3. Insert Excel-matching categories
+      // We use 'fixed' and 'variable' types mainly, but some can be both or specific
       const defaultCategories = [
         ['fixed', 'Loyer'],
         ['fixed', 'Electricité'],
@@ -221,26 +222,22 @@ const initDb = () => {
         ['fixed', 'Internet'],
         ['fixed', 'Téléphone'],
         ['variable', 'Besoins'],
-        ['variable', 'Courses'],
         ['variable', 'Loisirs'],
-        ['variable', 'Vacances']
+        ['variable', 'Vacances'],
+        ['variable', 'Courses'],
+        ['variable', 'Autre']
       ];
 
       defaultCategories.forEach(([type, name]) => {
         database.run(
-          "INSERT INTO categories (user_id, type, name) SELECT 1, ?, ? WHERE NOT EXISTS (SELECT 1 FROM categories WHERE user_id = 1 AND type = ? AND name = ?)",
-          [type, name, type, name],
+          "INSERT INTO categories (user_id, type, name) SELECT 1, ?, ? WHERE NOT EXISTS (SELECT 1 FROM categories WHERE user_id = 1 AND name = ?)",
+          [type, name, name],
           (err) => {
             if (err) console.error(`Error creating category ${name}:`, err);
           }
         );
       });
 
-      // Ensure we resolve after everything is queued
-      // Since serialize is synchronous in queuing, we can verify completion 
-      // by running a final dummy query or just relying on the fact that if this block completes without throwing,
-      // the commands are dispatched. For initDb, let's just resolve.
-      // A better way for strict completion is wrapping the last command, but standard serialize flow is robust enough for this init.
       resolve();
     });
   });
