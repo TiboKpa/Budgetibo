@@ -7,7 +7,7 @@ import './styles/App.css';
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
   const handleNavigateToMonth = (month) => {
     setSelectedMonth(month);
@@ -16,57 +16,50 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Sidebar Navigation */}
-      <aside className="app-sidebar">
-        <div className="sidebar-header">
+      <header className="app-header">
+        <div className="header-brand">
           <h1 className="app-logo">Budgetibo</h1>
+          <span className="logo-badge">PRO</span>
         </div>
-        
-        <nav className="sidebar-nav">
-          <div className="nav-group">
-            <span className="nav-label">NAVIGATION</span>
+
+        <div className="header-center">
+          <div className="nav-tabs">
             <button 
               onClick={() => setCurrentView('dashboard')}
-              className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
+              className={`nav-tab ${currentView === 'dashboard' ? 'active' : ''}`}
             >
-              Tableau de bord
+              Vue d'ensemble
             </button>
             <button 
               onClick={() => setCurrentView('summary')}
-              className={`nav-item ${currentView === 'summary' ? 'active' : ''}`}
+              className={`nav-tab ${currentView === 'summary' ? 'active' : ''}`}
             >
-              Bilan Annuel
+              Bilan annuel
             </button>
           </div>
 
-          <div className="nav-group">
-            <span className="nav-label">ANNÉE</span>
-            <div className="year-selector">
-              <button onClick={() => setSelectedYear(selectedYear - 1)} className="year-btn">←</button>
-              <span className="year-display">{selectedYear}</span>
-              <button onClick={() => setSelectedYear(selectedYear + 1)} className="year-btn">→</button>
-            </div>
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="avatar">TK</div>
-            <div className="user-info">
-              <span className="name">Tibo Kpa</span>
-              <span className="role">Pro Member</span>
-            </div>
+          <div className="year-control">
+            <button onClick={() => setSelectedYear(y => y - 1)} className="year-btn">‹</button>
+            <span className="year-display">{selectedYear}</span>
+            <button onClick={() => setSelectedYear(y => y + 1)} className="year-btn">›</button>
           </div>
         </div>
-      </aside>
 
-      {/* Main Content Area */}
+        <div className="header-actions">
+          <button className="header-btn">Paramètres</button>
+        </div>
+      </header>
+
       <main className="app-main">
         {currentView === 'dashboard' && (
           <Dashboard year={selectedYear} onSelectMonth={handleNavigateToMonth} />
         )}
-        {currentView === 'monthly' && (
-          <MonthlyView year={selectedYear} month={selectedMonth} onNavigateToDashboard={() => setCurrentView('dashboard')} />
+        {currentView === 'monthly' && selectedMonth && (
+          <MonthlyView 
+            year={selectedYear} 
+            month={selectedMonth} 
+            onBack={() => setCurrentView('dashboard')} 
+          />
         )}
         {currentView === 'summary' && (
           <YearSummary year={selectedYear} />

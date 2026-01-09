@@ -8,9 +8,29 @@ function MonthCard({ month, monthName, monthNumber, onSelect }) {
 
   return (
     <div className="month-card" onClick={handleClick}>
-      <h3>{monthName}</h3>
-      <div className="month-info">
-        <p className="small-text">Click to view details</p>
+      <div className="month-card-header">
+        <h3 className="month-name">{monthName}</h3>
+        <span className="month-status">En attente</span>
+      </div>
+
+      <div className="month-summary">
+        <div className="summary-row">
+          <span className="summary-label">Revenus</span>
+          <span className="summary-value positive">—</span>
+        </div>
+        <div className="summary-row">
+          <span className="summary-label">Dépenses</span>
+          <span className="summary-value negative">—</span>
+        </div>
+        <div className="summary-row">
+          <span className="summary-label">Épargne</span>
+          <span className="summary-value">—</span>
+        </div>
+      </div>
+
+      <div className="month-card-footer">
+        <span className="footer-text">Cliquer pour gérer</span>
+        <span className="arrow-icon">→</span>
       </div>
     </div>
   );
