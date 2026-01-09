@@ -25,17 +25,18 @@ function Dashboard({ year, onSelectMonth }) {
   }, [year]);
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  if (loading) return <div className="loading">Loading...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+  if (loading) return <div className="loading">Chargement...</div>;
+  if (error) return <div className="error">Erreur: {error}</div>;
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h2>Year {year} Overview</h2>
+        <h2>Vue d'ensemble {year}</h2>
+        <p className="subtitle">Sélectionnez un mois pour gérer votre budget</p>
       </div>
       <div className="months-grid">
         {months.map((month, index) => (
