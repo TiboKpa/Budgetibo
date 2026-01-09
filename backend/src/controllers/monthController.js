@@ -7,11 +7,23 @@ const ensureYearExists = async (userId, year) => {
   );
   
   if (!yearRecord) {
-    const result = await db.runQuery(
-      'INSERT INTO years (user_id, year) VALUES (?, ?)',
-      [userId, year]
-    );
-    yearRecord = { id: result.id };
+    try {
+      const result = await db.runQuery(
+        'INSERT INTO years (user_id, year) VALUES (?, ?)',
+        [userId, year]
+      );
+      yearRecord = { id: result.id };
+    } catch (error) {
+      // Handle race condition: if year was created by another request in parallel
+      if (error.code === 'SQLITE_CONSTRAINT') {
+        yearRecord = await db.getQuery(
+          'SELECT id FROM years WHERE user_id = ? AND year = ?',
+          [userId, year]
+        );
+      } else {
+        throw error;
+      }
+    }
   }
   
   return yearRecord;
@@ -36,6 +48,7 @@ const getAllMonthsForYear = async (req, res) => {
     );
     
     if (months.length === 0) {
+      // Use explicit transaction or sequential inserts to safely create months
       for (let i = 1; i <= 12; i++) {
         await db.runQuery(
           `INSERT OR IGNORE INTO months (year_id, month, allocation_distribution)
@@ -72,12 +85,23 @@ const getMonthDetails = async (req, res) => {
     );
     
     if (!monthRecord) {
-      const result = await db.runQuery(
-        `INSERT INTO months (year_id, month, allocation_distribution)
-         VALUES (?, ?, ?)`,
-        [yearRecord.id, month, JSON.stringify({ besoins: 45, courses: 10, loisirs: 10, vacances: 10, epargne: 25 })]
-      );
-      monthRecord = await db.getQuery('SELECT * FROM months WHERE id = ?', [result.id]);
+      try {
+        const result = await db.runQuery(
+          `INSERT INTO months (year_id, month, allocation_distribution)
+           VALUES (?, ?, ?)`,
+          [yearRecord.id, month, JSON.stringify({ besoins: 45, courses: 10, loisirs: 10, vacances: 10, epargne: 25 })]
+        );
+        monthRecord = await db.getQuery('SELECT * FROM months WHERE id = ?', [result.id]);
+      } catch (error) {
+        if (error.code === 'SQLITE_CONSTRAINT') {
+          monthRecord = await db.getQuery(
+            'SELECT * FROM months WHERE year_id = ? AND month = ?',
+            [yearRecord.id, month]
+          );
+        } else {
+          throw error;
+        }
+      }
     }
     
     const fixedExpenses = await db.allQuery(
