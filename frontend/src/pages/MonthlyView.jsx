@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { monthsAPI, fixedExpensesAPI, variableExpensesAPI, revenuesAPI } from '../services/api';
+import { monthsAPI } from '../services/api';
 import RevenueSection from '../components/RevenueSection';
 import ExpenseSection from '../components/ExpenseSection';
 import AllocationSection from '../components/AllocationSection';
@@ -27,19 +27,22 @@ function MonthlyView({ year, month, onNavigateToDashboard }) {
   }, [year, month]);
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  if (loading) return <div className="loading">Loading month data...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
-  if (!monthData) return <div className="error">No data found</div>;
+  if (loading) return <div className="loading">Chargement des données...</div>;
+  if (error) return <div className="error">Erreur: {error}</div>;
+  if (!monthData) return <div className="error">Aucune donnée trouvée</div>;
 
   return (
     <div className="monthly-view-container">
       <div className="monthly-header">
-        <button onClick={onNavigateToDashboard} className="back-button">Back to Dashboard</button>
-        <h2>{monthNames[month - 1]} {year}</h2>
+        <button onClick={onNavigateToDashboard} className="back-button">← Retour</button>
+        <div className="header-title">
+          <h2>{monthNames[month - 1]} {year}</h2>
+          <span className="status-badge">En cours</span>
+        </div>
       </div>
 
       <div className="monthly-content">
