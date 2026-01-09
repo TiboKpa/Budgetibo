@@ -1,13 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --primary-color: #2180A0;
-  --secondary-color: #FF5459;
-  --background-color: #FCFCF9;
-  --surface-color: #FFFFFF;
-  --text-primary: #134252;
-  --text-secondary: #626C7D;
-  --border-color: #E8E8E8;
-  --success-color: #22C55E;
-  --warning-color: #A84D2F;
+  /* Finary-inspired Palette */
+  --bg-app: #0F1115; /* Very dark background */
+  --bg-sidebar: #0F1115;
+  --bg-card: #1A1D21; /* Slightly lighter for cards */
+  --bg-input: #25282E;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+
+  --primary-accent: #C09BFA; /* Finary-ish Purple/Blue */
+  --primary-hover: #A78BFA;
+  
+  --border-color: #2E333D;
+  
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
 
 * {
@@ -17,10 +32,11 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--background-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-app);
   color: var(--text-primary);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 html, body, #root {
@@ -29,33 +45,59 @@ html, body, #root {
 
 .app-container {
   display: flex;
-  flex-direction: column;
   height: 100vh;
+  overflow: hidden;
 }
 
+/* Global Button Styles */
 button {
   cursor: pointer;
   border: none;
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-button:hover {
-  opacity: 0.9;
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
+/* Global Input Styles */
 input, select {
-  padding: 8px 12px;
+  background-color: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
   font-size: 14px;
-  font-family: inherit;
+  transition: border-color 0.2s;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(33, 128, 160, 0.1);
+  border-color: var(--primary-accent);
+}
+
+::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
 }
