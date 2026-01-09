@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const path = require('path');
+const db = require('./db/connection');
 
 dotenv.config();
 
@@ -31,6 +32,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'API is running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Budgetibo API running on port ${PORT}`);
-});
+// Initialize DB then start server
+db.initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Budgetibo API running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });
